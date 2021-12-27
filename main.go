@@ -11,7 +11,7 @@ import (
 )
 
 func dbInit() {
-	db, err := gorm.Open("sqlite3", "/tmp/gorm.db")
+	db, err := gorm.Open("sqlite3", "test.sqlite3")
     if err != nil {
         panic("cannot open the database")
     }
@@ -29,7 +29,7 @@ type Board struct {
 }
 
 func getAllBoards() []Board {
-	db, err := gorm.Open("sqlite3", "/tmp/gorm.db")
+	db, err := gorm.Open("sqlite3", "test.sqlite3")
 	if err != nil {
 		panic("cannot open the db in getAllBoards")
 	}
@@ -41,7 +41,7 @@ func getAllBoards() []Board {
 }
 
 func createBoard(title string) {
-	db, err := gorm.Open("sqlite3", "/tmp/gorm.db")
+	db, err := gorm.Open("sqlite3", "test.sqlite3")
 	if err != nil {
 		panic("cannot create new board")
 	}
