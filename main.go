@@ -1,7 +1,6 @@
 package main
 
 import (
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +21,7 @@ func dbInit() {
 
 type Board struct {
 	gorm.Model
-	ID        int
+	ID        string
 	Title     string
 	Comments  []Comment `gorm:"foreignkey:BoardID"`
 	CreatedAt time.Time
@@ -47,17 +46,21 @@ func createBoard(title string) {
 		panic("cannot create new board")
 	}
 
-	id, err := uuid.NewRandom()
+	uuid, err := uuid.NewRandom()
 	if err != nil {
 		panic("cannot generate uuid")
 	}
 
+	id := uuid.String()
+
+	db.Create(&Board{ID: id, Title: title, Comments: nil})
+	defer db.Close()
 }
 
 type Comment struct {
 	gorm.Model
-	ID        int
-	BoardID   int
+	ID        string
+	BoardID   string
 	content   string
 	CreatedAt time.Time
 	UpdateAt  time.Time
