@@ -1,47 +1,40 @@
 package main
 
 import (
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/jinzhu/gorm"
-
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"gorm.io/gorm"
+	"gorm.io/driver/sqlite"
 )
 
 func dbInit() {
-	db, err := gorm.Open("sqlite3", "test.sqlite3")
-    if err != nil {
-        panic("cannot open the database")
-    }
-    db.AutoMigrate(&Board{}, &Comment{})
-    defer db.Close()
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	if err != nil {
+		panic("cannot open the database")
+	}
+	db.AutoMigrate(&Board{}, &Comment{})
 }
 
 type Board struct {
 	gorm.Model
-	ID        string
-	Title     string
-	Comments  []Comment `gorm:"foreignkey:BoardID"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID       string `gorm:"primaryKey"`
+	Title    string
+	Comments []Comment `gorm:"foreignkey:BoardID"`
 }
 
 func getAllBoards() []Board {
-	db, err := gorm.Open("sqlite3", "test.sqlite3")
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		panic("cannot open the db in getAllBoards")
 	}
 
 	var boards []Board
-	db.Order("create_at desc").Find(&boards)
-	db.Close()
+	db.Order("created_at desc").Find(&boards)
 	return boards
 }
 
 func createBoard(title string) {
-	db, err := gorm.Open("sqlite3", "test.sqlite3")
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		panic("cannot create new board")
 	}
@@ -54,16 +47,13 @@ func createBoard(title string) {
 	id := uuid.String()
 
 	db.Create(&Board{ID: id, Title: title, Comments: nil})
-	defer db.Close()
 }
 
 type Comment struct {
 	gorm.Model
-	ID        string
-	BoardID   string
-	content   string
-	CreatedAt time.Time
-	UpdateAt  time.Time
+	ID      string `gorm:"primaryKey"`
+	BoardID string
+	Content string
 }
 
 func main() {

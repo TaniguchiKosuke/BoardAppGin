@@ -30,19 +30,17 @@
         <table class="table">
             <thead>
               <tr>
-                <th scope="col">#</th>
                 <th scope="col">Title</th>
                 <th scope="col">Created At</th>
               </tr>
             </thead>
             <tbody>
+            {{ range .boards}}
               <tr>
-                {{ range .boards}}
-                <th scope="row">1</th>
                 <td><a href="" style="text-decoration: none; color: black;">{{ .Title }}</a></td>
                 <td>{{ .CreatedAt }}</td>
-                {{ end }}
-              </tr>
+            </tr>
+            {{ end }}
             </tbody>
           </table>
     </div>
