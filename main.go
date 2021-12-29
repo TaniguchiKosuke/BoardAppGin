@@ -88,8 +88,7 @@ func getAllBoardComments(c *gin.Context) {
 	
 	var board Board
 	boardId := c.Param("id")
-	boardObj := db.Where("id ?", boardId).First(&board)
-	fmt.Println(board)
+	boardObj := db.First(&board, "id = ?", boardId)
 
 	var comments []Comment
 	searchParam, queryExist := c.GetQuery("comment")
