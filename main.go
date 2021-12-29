@@ -27,10 +27,15 @@ func getAllBoards(c *gin.Context) {
 	if err != nil {
 		panic("cannot open the db in getAllBoards")
 	}
-
-	var boards []Board
-	db.Order("created_at desc").Find(&boards)
 	
+	var boards []Board
+	searchParam, queryExist := c.GetQuery("title")
+	if queryExist {
+		db.Where("title LIKE ?", "%"+searchParam+"%").Order("created_at desc").Find(&boards)		
+	} else {
+		db.Order("created_at desc").Find(&boards)
+	}
+
 	c.HTML(200, "index.html", gin.H{
 		"boards": boards,
 	})
@@ -81,10 +86,15 @@ func getAllBoardComments(c *gin.Context) {
 
 	var comments []Comment
 	boardId := c.Param("id")
-	db.Where(&Comment{BoardID: boardId}).Order("created_at desc").Find(&comments)
+	searchParam, queryExist := c.GetQuery("comment")
+	if queryExist {
+		db.Where("content LIKE ?", "%"+searchParam+"%").Where(&Comment{BoardID: boardId}).Order("created_at desc").Find(&comments)
+	} else {
+		db.Where(&Comment{BoardID: boardId}).Order("created_at desc").Find(&comments)
+	}
 
 	c.HTML(200, "board.html", gin.H{
-		"ID": boardId,
+		"ID":       boardId,
 		"comments": comments,
 	})
 }

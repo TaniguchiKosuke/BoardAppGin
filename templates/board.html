@@ -16,8 +16,8 @@
                 <span class="navbar-toggler-icon"></span>
               </button>
               <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <form class="d-flex">
-                  <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <form method="get" class="d-flex">
+                  <input class="form-control me-2" type="text" placeholder="コメントで探す" name="comment">
                   <button class="btn btn-primary" type="submit">Search</button>
                 </form>
               </div>
@@ -25,24 +25,31 @@
           </nav>
     </header>
 
-    <div style="width: 84%;margin: 12px auto;display: flex;">
-        <div style="width: 68%; margin: auto;">
-            <h3>コメント一覧</h3>
-            {{ range .comments }}
-            <div class="card" style="margin: 8px auto;">
-                <div class="card-body">
-                    <p class="card-text">{{ .Content }}</p>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ .CreatedAt }}</h6>
-                </div>
-              </div>
-            {{ end }}
+    <div style="width: 84%;margin: 12px auto;">
+        <div class="card">
+            <div class="card-body">
+              <h3 class="card-title">{{ .title }}</h3>
+            </div>
         </div>
 
-        <form method="POST" action="/board/{{ .ID }}/comment" style="width: 28%; margin: 12px auto;">
-                <label for="exampleFormControlTextarea1" class="form-label">コメント</label>
-                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="content"></textarea>
-                <input class="btn btn-primary" type="submit" value="コメントする" style="margin-top: 8px;">
-        </form>
+        <div style="display: flex;">
+            <div style="width: 68%; margin: auto;">
+                {{ range .comments }}
+                <div class="card" style="margin: 8px auto;">
+                    <div class="card-body">
+                        <p class="card-text">{{ .Content }}</p>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ .CreatedAt }}</h6>
+                    </div>
+                  </div>
+                {{ end }}
+            </div>
+    
+            <form method="POST" action="/board/{{ .ID }}/comment" style="width: 28%; margin: 12px auto;">
+                    <label for="exampleFormControlTextarea1" class="form-label">コメント</label>
+                    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="content"></textarea>
+                    <input class="btn btn-primary" type="submit" value="コメントする" style="margin-top: 8px;">
+            </form>
+        </div>
     </div>
 
 </body>
