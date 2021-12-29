@@ -22,7 +22,7 @@ type Board struct {
 	Comments []Comment `gorm:"foreignKey:BoardID"`
 }
 
-func getAllBoards() []Board {
+func getAllBoards(c *gin.Context) {
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		panic("cannot open the db in getAllBoards")
@@ -30,10 +30,13 @@ func getAllBoards() []Board {
 
 	var boards []Board
 	db.Order("created_at desc").Find(&boards)
-	return boards
+	
+	c.HTML(200, "index.html", gin.H{
+		"boards": boards,
+	})
 }
 
-func createBoard(title string) {
+func createBoard(c *gin.Context) {
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		panic("cannot create new board")
@@ -45,8 +48,10 @@ func createBoard(title string) {
 	}
 
 	id := uuid.String()
-
+	title := c.PostForm("title")
 	db.Create(&Board{ID: id, Title: title, Comments: nil})
+
+	c.Redirect(302, "/")
 }
 
 func createBoardComment(boardId string, content string) {
@@ -90,22 +95,13 @@ func main() {
 
 	dbInit()
 
-	router.GET("/", func(c *gin.Context) {
-		allBoards := getAllBoards()
-		c.HTML(200, "index.html", gin.H{
-			"boards": allBoards,
-		})
-	})
+	router.GET("/", getAllBoards)
 
 	router.GET("/new/board", func(c *gin.Context) {
 		c.HTML(200, "create_board.html", gin.H{"title": "new board"})
 	})
 
-	router.POST("/new/board/post", func(c *gin.Context) {
-		title := c.PostForm("title")
-		createBoard(title)
-		c.Redirect(302, "/")
-	})
+	router.POST("/new/board/post", createBoard)
 
 	router.GET("/board/:id", func(c *gin.Context) {
 		boardId := c.Param("id")
