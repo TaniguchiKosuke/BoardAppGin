@@ -61,6 +61,7 @@ func createBoardComment(boardId string, content string) {
 	}
 
 	id := uuid.String()
+
 	db.Create(&Comment{ID: id, BoardID: boardId, Content: content})
 }
 
@@ -71,7 +72,7 @@ func getAllBoardComments(boardId string) []Comment {
 	}
 
 	var comments []Comment
-	db.Table("comments").Select("COALESCE(BoardID,?)", boardId).Find(&comments)
+	db.Where(&Comment{BoardID: boardId}).Order("created_at desc").Find(&comments)
 	return comments
 }
 
