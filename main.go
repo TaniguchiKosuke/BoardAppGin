@@ -54,7 +54,7 @@ func createBoard(c *gin.Context) {
 	c.Redirect(302, "/")
 }
 
-func createBoardComment(boardId string, content string) {
+func createBoardComment(c *gin.Context) {
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		panic("cannot create comment")
@@ -66,19 +66,27 @@ func createBoardComment(boardId string, content string) {
 	}
 
 	id := uuid.String()
-
+	content := c.PostForm("content")
+	boardId := c.Param("id")
 	db.Create(&Comment{ID: id, BoardID: boardId, Content: content})
+
+	c.Redirect(302, "/board/"+boardId)
 }
 
-func getAllBoardComments(boardId string) []Comment {
+func getAllBoardComments(c *gin.Context) {
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		panic("cannot get comments")
 	}
 
 	var comments []Comment
+	boardId := c.Param("id")
 	db.Where(&Comment{BoardID: boardId}).Order("created_at desc").Find(&comments)
-	return comments
+
+	c.HTML(200, "board.html", gin.H{
+		"ID": boardId,
+		"comments": comments,
+	})
 }
 
 type Comment struct {
@@ -96,28 +104,12 @@ func main() {
 	dbInit()
 
 	router.GET("/", getAllBoards)
-
 	router.GET("/new/board", func(c *gin.Context) {
 		c.HTML(200, "create_board.html", gin.H{"title": "new board"})
 	})
-
 	router.POST("/new/board/post", createBoard)
-
-	router.GET("/board/:id", func(c *gin.Context) {
-		boardId := c.Param("id")
-		allBoardComments := getAllBoardComments(boardId)
-		c.HTML(200, "board.html", gin.H{
-			"ID":       boardId,
-			"comments": allBoardComments,
-		})
-	})
-
-	router.POST("/board/:id/comment", func(c *gin.Context) {
-		content := c.PostForm("content")
-		boardId := c.Param("id")
-		createBoardComment(boardId, content)
-		c.Redirect(302, "/board/"+boardId)
-	})
+	router.GET("/board/:id", getAllBoardComments)
+	router.POST("/board/:id/comment", createBoardComment)
 
 	router.Run()
 }
