@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/driver/sqlite"
@@ -29,11 +27,11 @@ func getAllBoards(c *gin.Context) {
 	if err != nil {
 		panic("cannot open the db in getAllBoards")
 	}
-	
+
 	var boards []Board
 	searchParam, queryExist := c.GetQuery("title")
 	if queryExist {
-		db.Where("title LIKE ?", "%"+searchParam+"%").Order("created_at desc").Find(&boards)		
+		db.Where("title LIKE ?", "%"+searchParam+"%").Order("created_at desc").Find(&boards)
 	} else {
 		db.Order("created_at desc").Find(&boards)
 	}
@@ -85,7 +83,7 @@ func getAllBoardComments(c *gin.Context) {
 	if err != nil {
 		panic("cannot get comments")
 	}
-	
+
 	var board Board
 	boardId := c.Param("id")
 	boardObj := db.First(&board, "id = ?", boardId)
@@ -99,7 +97,7 @@ func getAllBoardComments(c *gin.Context) {
 	}
 
 	c.HTML(200, "board.html", gin.H{
-		"board" : boardObj,
+		"board":    boardObj,
 		"ID":       boardId,
 		"comments": comments,
 	})
