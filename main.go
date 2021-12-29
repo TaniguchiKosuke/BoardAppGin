@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/driver/sqlite"
@@ -83,9 +85,13 @@ func getAllBoardComments(c *gin.Context) {
 	if err != nil {
 		panic("cannot get comments")
 	}
+	
+	var board Board
+	boardId := c.Param("id")
+	boardObj := db.Where("id ?", boardId).First(&board)
+	fmt.Println(board)
 
 	var comments []Comment
-	boardId := c.Param("id")
 	searchParam, queryExist := c.GetQuery("comment")
 	if queryExist {
 		db.Where("content LIKE ?", "%"+searchParam+"%").Where(&Comment{BoardID: boardId}).Order("created_at desc").Find(&comments)
@@ -94,6 +100,7 @@ func getAllBoardComments(c *gin.Context) {
 	}
 
 	c.HTML(200, "board.html", gin.H{
+		"board" : boardObj,
 		"ID":       boardId,
 		"comments": comments,
 	})
