@@ -123,6 +123,12 @@ func main() {
 
 	dbInit()
 
+	router.GET("/signup", func(c *gin.Context) {
+		c.HTML(200, "signup.html", gin.H{})
+	})
+	router.GET("/login", func(c *gin.Context) {
+		c.HTML(200, "login.html", gin.H{})
+	})
 	router.GET("/", getAllBoards)
 	router.GET("/new/board", func(c *gin.Context) {
 		c.HTML(200, "create_board.html", gin.H{"title": "new board"})
