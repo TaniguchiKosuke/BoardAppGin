@@ -1,6 +1,11 @@
 package main
 
 import (
+	"log"
+	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/driver/sqlite"
@@ -12,7 +17,7 @@ func dbInit() {
 	if err != nil {
 		panic("cannot open the database")
 	}
-	db.AutoMigrate(&Board{}, &Comment{})
+	db.AutoMigrate(&User{}, &Board{}, &Comment{})
 }
 
 type User struct {
@@ -20,6 +25,45 @@ type User struct {
 	ID string `gorm:"primaryKey"`
     Username string `form:"username" binding:"required" gorm:"unique;not null"`
     Password string `form:"password" binding:"required"`
+}
+
+func signUp(c *gin.Context) {
+	var form User
+	// バリデーション処理
+	if err := c.Bind(&form); err != nil {
+		c.HTML(http.StatusBadRequest, "signup.html", gin.H{"err": err})
+		c.Abort()
+	} else {
+		username := c.PostForm("username")
+		password := c.PostForm("password")
+		// 登録ユーザーが重複していた場合にはじく処理
+		if err := createUser(username, password); err != nil {
+			c.HTML(http.StatusBadRequest, "signup.html", gin.H{"err": err})
+		}
+		c.Redirect(302, "/")
+	}
+}
+
+func createUser(username string, password string) error {
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	if err != nil {
+		panic("cannot create user")
+	}
+
+	uuid, err := uuid.NewRandom()
+	if err != nil {
+		log.Println("cannot generate uuid")
+		return err
+	}
+	id := uuid.String()
+
+	passwordEncrypt, _ := bcrypt.GenerateFromPassword([]byte(password), 12)
+	passwordErr := db.Create(&User{ID: id, Username: username, Password: string(passwordEncrypt)}).Error
+	if passwordErr != nil {
+		log.Println("An error occured when creating new User, most likely the username is already used")
+		return passwordErr
+	}
+	return nil
 }
 
 type Board struct {
@@ -126,6 +170,7 @@ func main() {
 	router.GET("/signup", func(c *gin.Context) {
 		c.HTML(200, "signup.html", gin.H{})
 	})
+	router.POST("/signup", signUp)
 	router.GET("/login", func(c *gin.Context) {
 		c.HTML(200, "login.html", gin.H{})
 	})
