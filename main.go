@@ -33,6 +33,10 @@ type User struct {
 	Password string `form:"password" binding:"required"`
 }
 
+func signUpPage(c *gin.Context) {
+	c.HTML(200, "signup.html", gin.H{})
+}
+
 func signUp(c *gin.Context) {
 	var form User
 	// バリデーション処理
@@ -67,6 +71,10 @@ func createUser(username string, password string) error {
 		return passwordErr
 	}
 	return nil
+}
+
+func loginPage(c *gin.Context) {
+	c.HTML(200, "login.html", gin.H{})
 }
 
 func login(c *gin.Context) {
@@ -113,6 +121,10 @@ func getAllBoards(c *gin.Context) {
 	c.HTML(200, "index.html", gin.H{
 		"boards": boards,
 	})
+}
+
+func createBoardPage(c *gin.Context) {
+	c.HTML(200, "create_board.html", gin.H{"title": "new board"})
 }
 
 func createBoard(c *gin.Context) {
@@ -181,18 +193,12 @@ func main() {
 
 	dbInit()
 
-	router.GET("/signup", func(c *gin.Context) {
-		c.HTML(200, "signup.html", gin.H{})
-	})
+	router.GET("/signup", signUpPage)
 	router.POST("/signup", signUp)
-	router.GET("/login", func(c *gin.Context) {
-		c.HTML(200, "login.html", gin.H{})
-	})
+	router.GET("/login", loginPage)
 	router.POST("/login", login)
 	router.GET("/", getAllBoards)
-	router.GET("/new/board", func(c *gin.Context) {
-		c.HTML(200, "create_board.html", gin.H{"title": "new board"})
-	})
+	router.GET("/new/board", createBoardPage)
 	router.POST("/new/board/post", createBoard)
 	router.GET("/board/:id", getAllBoardComments)
 	router.POST("/board/:id/comment", createBoardComment)
