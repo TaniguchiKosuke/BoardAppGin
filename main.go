@@ -15,6 +15,13 @@ func dbInit() {
 	db.AutoMigrate(&Board{}, &Comment{})
 }
 
+type User struct {
+	gorm.Model
+	ID string `gorm:"primaryKey"`
+    Username string `form:"username" binding:"required" gorm:"unique;not null"`
+    Password string `form:"password" binding:"required"`
+}
+
 type Board struct {
 	gorm.Model
 	ID       string `gorm:"primaryKey"`
@@ -55,8 +62,15 @@ func createBoard(c *gin.Context) {
 	id := uuid.String()
 	title := c.PostForm("title")
 	db.Create(&Board{ID: id, Title: title, Comments: nil})
-
+	
 	c.Redirect(302, "/")
+}
+
+type Comment struct {
+	gorm.Model
+	ID      string `gorm:"primaryKey"`
+	BoardID string
+	Content string
 }
 
 func createBoardComment(c *gin.Context) {
@@ -84,9 +98,9 @@ func getAllBoardComments(c *gin.Context) {
 		panic("cannot get comments")
 	}
 
-	var board Board
+	// var board Board
 	boardId := c.Param("id")
-	boardObj := db.First(&board, "id = ?", boardId)
+	// boardObj := db.First(&board, "id = ?", boardId)
 
 	var comments []Comment
 	searchParam, queryExist := c.GetQuery("comment")
@@ -97,17 +111,9 @@ func getAllBoardComments(c *gin.Context) {
 	}
 
 	c.HTML(200, "board.html", gin.H{
-		"board":    boardObj,
 		"ID":       boardId,
 		"comments": comments,
 	})
-}
-
-type Comment struct {
-	gorm.Model
-	ID      string `gorm:"primaryKey"`
-	BoardID string
-	Content string
 }
 
 func main() {
