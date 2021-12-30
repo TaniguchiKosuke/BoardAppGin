@@ -13,11 +13,17 @@ import (
 )
 
 func dbInit() {
+	db := dbConnect()
+	db.AutoMigrate(&User{}, &Board{}, &Comment{})
+}
+
+func dbConnect() *gorm.DB {
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		panic("cannot open the database")
 	}
-	db.AutoMigrate(&User{}, &Board{}, &Comment{})
+
+	return db
 }
 
 type User struct {
@@ -45,10 +51,7 @@ func signUp(c *gin.Context) {
 }
 
 func createUser(username string, password string) error {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	if err != nil {
-		panic("cannot create user")
-	}
+	db := dbConnect()
 
 	uuid, err := uuid.NewRandom()
 	if err != nil {
@@ -82,10 +85,7 @@ func login(c *gin.Context) {
 }
 
 func getUser(username string) User {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	if err != nil {
-		panic("cannot open the database")
-	}
+	db := dbConnect()
 
 	var user User
 	db.First(&user, "username = ?", username)
@@ -100,10 +100,7 @@ type Board struct {
 }
 
 func getAllBoards(c *gin.Context) {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	if err != nil {
-		panic("cannot open the database")
-	}
+	db := dbConnect()
 
 	var boards []Board
 	searchParam, queryExist := c.GetQuery("title")
@@ -119,10 +116,7 @@ func getAllBoards(c *gin.Context) {
 }
 
 func createBoard(c *gin.Context) {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	if err != nil {
-		panic("cannot open the database")
-	}
+	db := dbConnect()
 
 	uuid, err := uuid.NewRandom()
 	if err != nil {
@@ -144,10 +138,7 @@ type Comment struct {
 }
 
 func createBoardComment(c *gin.Context) {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	if err != nil {
-		panic("cannot open the database")
-	}
+	db := dbConnect()
 
 	uuid, err := uuid.NewRandom()
 	if err != nil {
@@ -163,10 +154,7 @@ func createBoardComment(c *gin.Context) {
 }
 
 func getAllBoardComments(c *gin.Context) {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	if err != nil {
-		panic("cannot open the database")
-	}
+	db := dbConnect()
 
 	// var board Board
 	boardId := c.Param("id")
