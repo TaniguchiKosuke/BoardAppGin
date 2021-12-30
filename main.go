@@ -66,6 +66,32 @@ func createUser(username string, password string) error {
 	return nil
 }
 
+func login(c *gin.Context) {
+	dbPassword := getUser(c.PostForm("username")).Password
+	log.Println(dbPassword)
+	formPassword := c.PostForm("password")
+
+	if err := bcrypt.CompareHashAndPassword([]byte(dbPassword), []byte(formPassword)); err != nil {
+		log.Println("login failed")
+		c.HTML(http.StatusBadRequest, "login.html", gin.H{"err": err})
+		c.Abort()
+	} else {
+		log.Println("login successed")
+		c.Redirect(302, "/")
+	}
+}
+
+func getUser(username string) User {
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	if err != nil {
+		panic("cannot open the database")
+	}
+
+	var user User
+	db.First(&user, "username = ?", username)
+	return user
+}
+
 type Board struct {
 	gorm.Model
 	ID       string `gorm:"primaryKey"`
@@ -76,7 +102,7 @@ type Board struct {
 func getAllBoards(c *gin.Context) {
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
-		panic("cannot open the db in getAllBoards")
+		panic("cannot open the database")
 	}
 
 	var boards []Board
@@ -95,7 +121,7 @@ func getAllBoards(c *gin.Context) {
 func createBoard(c *gin.Context) {
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
-		panic("cannot create new board")
+		panic("cannot open the database")
 	}
 
 	uuid, err := uuid.NewRandom()
@@ -120,7 +146,7 @@ type Comment struct {
 func createBoardComment(c *gin.Context) {
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
-		panic("cannot create comment")
+		panic("cannot open the database")
 	}
 
 	uuid, err := uuid.NewRandom()
@@ -139,7 +165,7 @@ func createBoardComment(c *gin.Context) {
 func getAllBoardComments(c *gin.Context) {
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
-		panic("cannot get comments")
+		panic("cannot open the database")
 	}
 
 	// var board Board
@@ -174,6 +200,7 @@ func main() {
 	router.GET("/login", func(c *gin.Context) {
 		c.HTML(200, "login.html", gin.H{})
 	})
+	router.POST("/login", login)
 	router.GET("/", getAllBoards)
 	router.GET("/new/board", func(c *gin.Context) {
 		c.HTML(200, "create_board.html", gin.H{"title": "new board"})
