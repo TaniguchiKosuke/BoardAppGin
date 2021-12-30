@@ -28,9 +28,9 @@ func dbConnect() *gorm.DB {
 
 type User struct {
 	gorm.Model
-	ID string `gorm:"primaryKey"`
-    Username string `form:"username" binding:"required" gorm:"unique;not null"`
-    Password string `form:"password" binding:"required"`
+	ID       string `gorm:"primaryKey"`
+	Username string `form:"username" binding:"required" gorm:"unique;not null"`
+	Password string `form:"password" binding:"required"`
 }
 
 func signUp(c *gin.Context) {
@@ -126,7 +126,7 @@ func createBoard(c *gin.Context) {
 	id := uuid.String()
 	title := c.PostForm("title")
 	db.Create(&Board{ID: id, Title: title, Comments: nil})
-	
+
 	c.Redirect(302, "/")
 }
 
